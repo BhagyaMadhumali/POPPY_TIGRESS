@@ -1,100 +1,161 @@
-import { useState } from "react";
+import { useRef } from "react";
+import MarqueeBar from "../../components/MarqueeBar/MarqueeBar";
 
-const buySteps = [
-  { title: "Buy Some TRX" },
-  { title: "Type The Amount" },
-  { title: "Get PoppyTigress" },
+const steps = [
+  {
+    title: "Buy Same Trx",
+    cardClass: "lg:left-[189px] lg:top-[198px]",
+    titleClass: "lg:w-[149px]",
+  },
+  {
+    title: "Type The Amount",
+    cardClass: "lg:left-[696px] lg:top-0",
+    titleClass: "lg:w-[198px]",
+  },
+  {
+    title: "Get PoppyTigress",
+    cardClass: "lg:left-[1181px] lg:top-[197px]",
+    titleClass: "lg:w-[198px]",
+  },
 ];
 
-export default function HowToBuy() {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [touchStart, setTouchStart] = useState(0);
-
-  const nextItem = () => {
-    setActiveIndex((prev) => (prev + 1) % buySteps.length);
-  };
-
-  const prevItem = () => {
-    setActiveIndex((prev) => (prev === 0 ? buySteps.length - 1 : prev - 1));
-  };
-
-  const handleMoveEnd = (endX) => {
-    const diff = touchStart - endX;
-
-    if (diff > 50) nextItem();
-    if (diff < -50) prevItem();
-  };
-
-  const StepCard = ({ step }) => (
-    <div className="relative h-[240px] w-[340px] sm:h-[310px] sm:w-[430px] lg:h-[360px] lg:w-[520px]">
+function HowToBuyCard({ title, cardClass, titleClass }) {
+  return (
+    <div
+      className={`relative h-[400px] w-[342px] shrink-0 lg:absolute lg:h-[516px] lg:w-[516px] ${cardClass}`}
+    >
       <img
         src="/roadmap-popup.png"
         alt=""
         draggable="false"
-        className="h-full w-full object-fill"
+        className="absolute inset-0 h-full w-full object-fill"
       />
 
-      <div className="absolute left-1/2 top-[45%] flex w-[45%] -translate-x-1/2 -translate-y-1/2 flex-col items-center text-center">
-        <h3 className="font-['Jaini'] text-[18px] leading-[20px] text-white sm:text-[24px] sm:leading-[26px] lg:text-[32px] lg:leading-[34px]">
-          {step.title}
+      <div className="absolute left-1/2 top-1/2 flex h-[161px] w-[177px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-start gap-[14px] text-center lg:left-[142px] lg:top-[151px] lg:h-[173px] lg:w-[232px] lg:translate-x-0 lg:translate-y-0 lg:gap-[40px]">
+        <h3
+          className={`flex h-[49px] items-center justify-center text-center font-['Jaini'] text-[32px] font-normal leading-[25px] text-white lg:h-[49px] lg:text-[32px] ${titleClass}`}
+        >
+          {title}
         </h3>
 
-        <p className="mt-4 font-['Jaini'] text-[10px] leading-[13px] text-white sm:text-[13px] sm:leading-[17px] lg:text-[16px] lg:leading-[20px]">
-          This is a short explanation.
-          <br />
-          Make it short and clear
-          <br />
-          to keep students attentive.
+        <p className="h-[112px] w-[177px] text-center font-['Jaini'] text-[21px] font-normal leading-[100%] text-white lg:h-[84px] lg:w-[232px] lg:text-[21px]">
+          This is a short explanation. make it short and clear to keep students
+          attentive.
         </p>
       </div>
     </div>
   );
+}
+
+export default function HowToBuy() {
+  const sliderRef = useRef(null);
+  const dragRef = useRef({
+    isDown: false,
+    startX: 0,
+    scrollLeft: 0,
+  });
+
+  const startDrag = (e) => {
+    const slider = sliderRef.current;
+    if (!slider) return;
+
+    dragRef.current.isDown = true;
+    dragRef.current.startX = e.clientX;
+    dragRef.current.scrollLeft = slider.scrollLeft;
+
+    slider.setPointerCapture?.(e.pointerId);
+  };
+
+  const moveDrag = (e) => {
+    const slider = sliderRef.current;
+    if (!slider || !dragRef.current.isDown) return;
+
+    const x = e.clientX;
+    const walk = x - dragRef.current.startX;
+
+    slider.scrollLeft = dragRef.current.scrollLeft - walk;
+  };
+
+  const endDrag = () => {
+    dragRef.current.isDown = false;
+  };
 
   return (
-    <section className="relative min-h-[900px] w-full overflow-hidden bg-white sm:min-h-[1000px] lg:min-h-[901px]">
-      <img
-        src="/bg-left.png"
-        alt=""
-        className="absolute bottom-[-45px] left-0 z-0 h-full max-h-[850px] w-auto object-contain"
-      />
-
-      <img
-        src="/bg-left.png"
-        alt=""
-        className="absolute bottom-[-45px] right-0 z-0 h-full max-h-[850px] w-auto scale-x-[-1] object-contain"
-      />
-
-      <img
-        src="/temple.png"
-        alt="Temple"
-        className="absolute bottom-[-150px] left-1/2 z-10 w-[95%] max-w-[750px] -translate-x-1/2 object-contain sm:w-[75%] lg:w-[48%]"
-      />
-
-      {/* Mobile carousel */}
-      <div
-        className="relative z-30 flex min-h-[900px] cursor-grab select-none flex-col items-center justify-center lg:hidden"
-        onTouchStart={(e) => setTouchStart(e.touches[0].clientX)}
-        onTouchEnd={(e) => handleMoveEnd(e.changedTouches[0].clientX)}
-        onMouseDown={(e) => setTouchStart(e.clientX)}
-        onMouseUp={(e) => handleMoveEnd(e.clientX)}
+    <>
+      <section
+        id="how-to-buy"
+        className="relative h-[720px] w-full overflow-hidden bg-white lg:-mt-[14px] lg:h-[1098px]"
       >
-        <StepCard step={buySteps[activeIndex]} />
-      </div>
+        {/* LEFT BG */}
+        <img
+          src="/bg-left.png"
+          alt=""
+          className="absolute left-[-10px] top-[326px] z-0 h-[392px] w-[196.65260314941406px] object-cover opacity-100 lg:left-0 lg:top-[197px] lg:block lg:h-[901px] lg:w-[452px]"
+        />
 
-      {/* Desktop layout */}
-      <div className="hidden lg:block">
-        <div className="absolute left-[27%] top-[18%] z-30 -translate-x-1/2">
-          <StepCard step={buySteps[0]} />
+        {/* RIGHT BG - MIRROR OF LEFT */}
+        <img
+          src="/bg-left.png"
+          alt=""
+          className="absolute z-0 hidden scale-x-[-1] object-cover opacity-100 lg:left-[1471px] lg:top-[197px] lg:block lg:h-[901px] lg:w-[452px]"
+        />
+
+        {/* MOBILE TEMPLE - LITTLE BELOW + ZOOMED */}
+        <img
+          src="/temple.png"
+          alt="Temple"
+          className="absolute left-[80px] top-[455px] z-10 h-[330px] w-[540px] max-w-none object-contain opacity-100 lg:hidden"
+        />
+
+        {/* DESKTOP TEMPLE - KEEP AS IT IS */}
+        <img
+          src="/temple.png"
+          alt="Temple"
+          className="absolute z-10 hidden lg:left-1/2 lg:top-[420px] lg:block lg:h-[840px] lg:w-[1390px] lg:-translate-x-1/2 lg:scale-[1.12] lg:object-contain"
+        />
+
+        {/* MOBILE DRAG SLIDER - NO ARROWS */}
+        <div
+          ref={sliderRef}
+          className="absolute left-[33px] top-[122px] z-30 flex h-[400px] w-[342px] cursor-grab select-none snap-x snap-mandatory gap-[24px] overflow-x-auto overflow-y-hidden scroll-smooth active:cursor-grabbing lg:hidden [&::-webkit-scrollbar]:hidden"
+          style={{
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+            touchAction: "pan-y",
+          }}
+          onPointerDown={startDrag}
+          onPointerMove={moveDrag}
+          onPointerUp={endDrag}
+          onPointerLeave={endDrag}
+        >
+          {steps.map((step) => (
+            <div
+              key={step.title}
+              className="h-[400px] w-[342px] shrink-0 snap-start"
+            >
+              <HowToBuyCard
+                title={step.title}
+                cardClass=""
+                titleClass={step.titleClass}
+              />
+            </div>
+          ))}
         </div>
 
-        <div className="absolute left-1/2 top-[0%] z-30 -translate-x-1/2">
-          <StepCard step={buySteps[1]} />
+        {/* DESKTOP CARDS */}
+        <div className="relative z-30 hidden h-full w-full lg:block">
+          {steps.map((step) => (
+            <HowToBuyCard
+              key={step.title}
+              title={step.title}
+              cardClass={step.cardClass}
+              titleClass={step.titleClass}
+            />
+          ))}
         </div>
+      </section>
 
-        <div className="absolute left-[73%] top-[18%] z-30 -translate-x-1/2">
-          <StepCard step={buySteps[2]} />
-        </div>
-      </div>
-    </section>
+      <MarqueeBar />
+    </>
   );
 }
